@@ -78,6 +78,10 @@ func Fatalf(format string, args ...interface{}) {
 	logger.Fatalf(format, args...)
 }
 
+func Panicf(format string, args ...interface{}) {
+	Panic(fmt.Sprintf(format, args...))
+}
+
 // Specify your own levels
 func Log(l log.Level, args ...interface{}) {
 	logger.Log(l, args...)

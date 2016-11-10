@@ -7,10 +7,23 @@ import (
 	"github.com/micro/go-os/log"
 )
 
+const (
+	DefaultOutputName = "logrus"
+)
+
+type LogrusOption func(o *LogrusOptions)
+
+type LogrusOptions struct {
+	log.OutputOptions
+
+	hooks     []logrus.Hook
+	formatter logrus.Formatter
+}
+
 type output struct {
 	*logrus.Logger
 
-	opts log.OutputOptions
+	opts LogrusOptions
 	err  error
 }
 
@@ -59,21 +72,44 @@ func (o *output) String() string {
 	return "logrus"
 }
 
-func NewOutput(opts ...log.OutputOption) log.Output {
-	var options log.OutputOptions
+func NewOutput(opts ...LogrusOption) log.Output {
+	var options LogrusOptions
 	for _, o := range opts {
 		o(&options)
 	}
 
 	if len(options.Name) == 0 {
-		options.Name = log.DefaultOutputName
+		options.Name = DefaultOutputName
 	}
 
 	l := logrus.New()
+
+	//Log level is decided by the log of go-os
+	l.Level = logrus.PanicLevel
+
+	if options.formatter != nil {
+		l.Formatter = options.formatter
+	}
+
+	for _, hook := range options.hooks {
+		l.Hooks.Add(hook)
+	}
 
 	return &output{
 		opts:   options,
 		err:    errors.New("logrus initialize failed"),
 		Logger: l,
+	}
+}
+
+func WithFormatter(formatter logrus.Formatter) LogrusOption {
+	return func(o *LogrusOptions) {
+		o.formatter = formatter
+	}
+}
+
+func WithHook(hook logrus.Hook) LogrusOption {
+	return func(o *LogrusOptions) {
+		o.hooks = append(o.hooks, hook)
 	}
 }

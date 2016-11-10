@@ -32,9 +32,7 @@ func init() {
 		// log.WithFields(log.Fields{
 		// 	"logger": "platform",
 		// }),
-		log.WithOutput(
-			NewOutput(),
-		),
+		log.WithOutput(NewOutput()),
 	)
 
 	logger.Info("Log Level:", level)

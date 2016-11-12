@@ -2,9 +2,9 @@ package log
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 
+	"github.com/micro/cli"
+	"github.com/micro/go-micro/cmd"
 	"github.com/micro/go-os/log"
 )
 
@@ -19,12 +19,36 @@ var (
 )
 
 func init() {
-	level = defaultLevel
-	if env := os.Getenv(levelEnv); env != "" {
-		v, err := strconv.ParseUint(env, 10, 32)
-		if err == nil {
-			level = log.Level(v)
+	app := cmd.App()
+
+	app.Flags = append(app.Flags,
+		cli.StringFlag{
+			Name:   "log_level",
+			EnvVar: "UNI_LOG_LEVEL",
+			Usage:  "The level of logging. Value:[debug, info, warn, error, fatal]",
+			Value:  "info",
+		},
+	)
+
+	before := app.Before
+
+	app.Before = func(ctx *cli.Context) error {
+		if lv := ctx.String("log_level"); lv != "" {
+			switch lv {
+			case "debug":
+				level = log.DebugLevel
+			case "info":
+				level = log.InfoLevel
+			case "warn":
+				level = log.WarnLevel
+			case "error":
+				level = log.ErrorLevel
+			case "fatal":
+				level = log.FatalLevel
+			}
 		}
+
+		return before(ctx)
 	}
 
 	logger = log.NewLog(

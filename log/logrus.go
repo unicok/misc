@@ -72,7 +72,7 @@ func (o *output) String() string {
 	return "logrus"
 }
 
-func NewOutput(opts ...LogrusOption) log.Output {
+func NewOutput(opts ...LogrusOption) *output {
 	var options LogrusOptions
 	for _, o := range opts {
 		o(&options)
@@ -85,7 +85,7 @@ func NewOutput(opts ...LogrusOption) log.Output {
 	l := logrus.New()
 
 	//Log level is decided by the log of go-os
-	l.Level = logrus.PanicLevel
+	l.Level = logrus.DebugLevel
 
 	if options.formatter != nil {
 		l.Formatter = options.formatter
